@@ -28,6 +28,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
     try {
       if (mode === 'signup') {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+        
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -35,6 +37,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
             data: {
               nome: nome,
             },
+            emailRedirectTo: `${siteUrl}/login`,
           },
         })
         

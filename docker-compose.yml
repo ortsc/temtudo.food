@@ -1,0 +1,24 @@
+services:
+  temtudo-app:
+    build: .
+    container_name: temtudo-app
+    restart: unless-stopped
+    networks:
+      - shared_service
+    labels:
+      - "traefik.enable=true"
+
+      # Subdomínio
+      - "traefik.http.routers.temtudo-app.rule=Host(`temtudo.blinkpec.com`)"
+
+      # HTTPS
+      - "traefik.http.routers.temtudo-app.entrypoints=websecure"
+      - "traefik.http.routers.temtudo-app.tls=true"
+      - "traefik.http.routers.temtudo-app.tls.certresolver=mytlschallenge"
+
+      # Porta interna do Next
+      - "traefik.http.services.temtudo-app.loadbalancer.server.port=3000"
+
+networks:
+  shared_service:
+    external: true

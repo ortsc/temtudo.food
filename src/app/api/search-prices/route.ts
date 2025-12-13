@@ -41,12 +41,21 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Supabase is configured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || 
+        process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url') {
+      return NextResponse.json(
+        { success: false, error: 'Supabase não configurado', markets: [] },
+        { status: 500 }
+      )
+    }
+
     const body = await request.json()
     const { productName, userLat, userLng } = body
 
     if (!productName) {
       return NextResponse.json(
-        { success: false, error: 'Nome do produto não fornecido' },
+        { success: false, error: 'Nome do produto não fornecido', markets: [] },
         { status: 400 }
       )
     }

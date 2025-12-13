@@ -122,7 +122,7 @@ export default function SimpleMap({
   }, [markers, userLocation, selectedMarkerId, onMarkerClick])
 
   return (
-    <div ref={mapRef} className="w-full h-full rounded-b-3xl" />
+    <div ref={mapRef} className="w-full h-full" />
   )
 }
 

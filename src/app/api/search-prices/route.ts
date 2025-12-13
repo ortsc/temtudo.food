@@ -7,24 +7,31 @@ interface MarketPrice {
   endereco_mercado: string | null
   cidade_mercado: string | null
   estado_mercado: string | null
+  bairro_mercado: string | null
   preco: number
   data_hora: string
-  // Placeholder coordinates (in production, these would be stored in the DB)
   lat: number
   lng: number
   distance?: number
 }
 
-// Simulated coordinates for markets (in production, store real coords in DB)
-const marketCoordinates: Record<number, { lat: number; lng: number }> = {
-  1: { lat: -23.5629, lng: -46.6544 }, // Extra - Paulista
-  2: { lat: -23.5547, lng: -46.6625 }, // Carrefour - Augusta
-  3: { lat: -22.9068, lng: -43.1729 }, // Pão de Açúcar - RJ
-  4: { lat: -22.9052, lng: -47.0608 }, // Atacadão - Campinas
-  5: { lat: -23.5418, lng: -46.6296 }, // Mercado Municipal
-  6: { lat: -23.5505, lng: -46.6333 }, // Assaí
-  7: { lat: -8.0476, lng: -34.8770 },  // Big Bompreço - Recife
-  8: { lat: -30.0346, lng: -51.2177 }, // Zaffari - POA
+interface PriceRow {
+  id_preco: number
+  id_produto: number | null
+  id_mercado: number | null
+  preco: number
+  data_hora: string
+}
+
+interface MercadoRow {
+  id_mercado: number
+  nome_mercado: string | null
+  endereco_mercado: string | null
+  cidade_mercado: string | null
+  estado_mercado: string | null
+  bairro_mercado: string | null
+  latitude: number | null
+  longitude: number | null
 }
 
 function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -71,7 +78,7 @@ export async function POST(request: NextRequest) {
     if (productError) {
       console.error('Error searching products:', productError)
       return NextResponse.json(
-        { success: false, error: 'Erro ao buscar produtos' },
+        { success: false, error: 'Erro ao buscar produtos', markets: [] },
         { status: 500 }
       )
     }
@@ -88,63 +95,97 @@ export async function POST(request: NextRequest) {
     // Get product IDs
     const productIds = products.map((p: { id_produto: number }) => p.id_produto)
 
-    // Get latest prices for these products at each market
+    // Get all prices for these products
     const { data: prices, error: pricesError } = await supabase
       .from('Precos')
-      .select(`
-        id_preco,
-        id_produto,
-        id_mercado,
-        preco,
-        data_hora,
-        Mercados!inner (
-          id_mercado,
-          nome_mercado,
-          endereco_mercado,
-          cidade_mercado,
-          estado_mercado
-        )
-      `)
+      .select('id_preco, id_produto, id_mercado, preco, data_hora')
       .in('id_produto', productIds)
       .order('data_hora', { ascending: false })
 
     if (pricesError) {
       console.error('Error fetching prices:', pricesError)
       return NextResponse.json(
-        { success: false, error: 'Erro ao buscar preços' },
+        { success: false, error: 'Erro ao buscar preços', markets: [] },
         { status: 500 }
       )
     }
 
+    const priceRows = prices as PriceRow[] | null
+
+    if (!priceRows || priceRows.length === 0) {
+      return NextResponse.json({
+        success: true,
+        product: products[0],
+        markets: [],
+        message: 'Nenhum preço encontrado para este produto'
+      })
+    }
+
+    // Get unique market IDs
+    const marketIds = [...new Set(
+      priceRows
+        .map(p => p.id_mercado)
+        .filter((id): id is number => id !== null)
+    )]
+
+    if (marketIds.length === 0) {
+      return NextResponse.json({
+        success: true,
+        product: products[0],
+        markets: [],
+        message: 'Nenhum mercado encontrado'
+      })
+    }
+
+    // Fetch market details
+    const { data: mercados, error: mercadosError } = await supabase
+      .from('Mercados')
+      .select('id_mercado, nome_mercado, endereco_mercado, cidade_mercado, estado_mercado, bairro_mercado, latitude, longitude')
+      .in('id_mercado', marketIds)
+
+    if (mercadosError) {
+      console.error('Error fetching mercados:', mercadosError)
+      return NextResponse.json(
+        { success: false, error: 'Erro ao buscar mercados', markets: [] },
+        { status: 500 }
+      )
+    }
+
+    const mercadoRows = mercados as MercadoRow[] | null
+
+    // Create market lookup
+    const mercadoLookup = new Map<number, MercadoRow>(
+      (mercadoRows || []).map(m => [m.id_mercado, m])
+    )
+
     // Group by market and get the best (lowest) price at each
     const marketPricesMap = new Map<number, MarketPrice>()
 
-    for (const price of prices || []) {
-      const mercado = price.Mercados as unknown as {
-        id_mercado: number
-        nome_mercado: string
-        endereco_mercado: string | null
-        cidade_mercado: string | null
-        estado_mercado: string | null
-      }
+    for (const price of priceRows) {
+      if (!price.id_mercado) continue
       
-      const marketId = mercado.id_mercado
-      const existingPrice = marketPricesMap.get(marketId)
+      const mercado = mercadoLookup.get(price.id_mercado)
+      if (!mercado) continue
+
+      const existingPrice = marketPricesMap.get(price.id_mercado)
 
       // Keep the lowest price for this market
       if (!existingPrice || (price.preco && price.preco < existingPrice.preco)) {
-        const coords = marketCoordinates[marketId] || { lat: -23.55, lng: -46.63 }
+        // Use real coordinates from DB, fallback to Rio center
+        const lat = mercado.latitude ? Number(mercado.latitude) : -22.9838
+        const lng = mercado.longitude ? Number(mercado.longitude) : -43.2244
         
-        marketPricesMap.set(marketId, {
-          id_mercado: marketId,
+        marketPricesMap.set(price.id_mercado, {
+          id_mercado: price.id_mercado,
           nome_mercado: mercado.nome_mercado || 'Mercado',
           endereco_mercado: mercado.endereco_mercado,
           cidade_mercado: mercado.cidade_mercado,
           estado_mercado: mercado.estado_mercado,
+          bairro_mercado: mercado.bairro_mercado,
           preco: price.preco || 0,
           data_hora: price.data_hora || '',
-          lat: coords.lat,
-          lng: coords.lng,
+          lat,
+          lng,
         })
       }
     }
@@ -177,7 +218,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error in search-prices:', error)
     return NextResponse.json(
-      { success: false, error: 'Erro interno do servidor' },
+      { success: false, error: 'Erro interno do servidor', markets: [] },
       { status: 500 }
     )
   }
@@ -223,4 +264,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-

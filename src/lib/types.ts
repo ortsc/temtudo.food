@@ -15,6 +15,11 @@ export interface Mercado {
   cidade_mercado: string | null
   estado_mercado: string | null
   cep_mercado: string | null
+  latitude: number | null
+  longitude: number | null
+  telefone_mercado: string | null
+  website_mercado: string | null
+  bairro_mercado: string | null
 }
 
 export interface Produto {

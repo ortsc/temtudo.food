@@ -90,8 +90,12 @@ export async function POST(request: Request) {
       if (s.dados && typeof s.dados === 'object') {
         const dados = s.dados as Record<string, unknown>
         if (dados.productName) searchedProducts.push(dados.productName as string)
+        if (dados.query) searchedProducts.push(dados.query as string)
         if (dados.produtos && Array.isArray(dados.produtos)) {
           searchedProducts.push(...(dados.produtos as string[]))
+        }
+        if (dados.products && Array.isArray(dados.products)) {
+          searchedProducts.push(...(dados.products as string[]))
         }
       }
     })

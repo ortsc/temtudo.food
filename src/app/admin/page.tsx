@@ -23,6 +23,11 @@ interface Report {
   generatedAt: string
 }
 
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
@@ -34,8 +39,13 @@ export default function AdminPage() {
   const [loadingSearches, setLoadingSearches] = useState(false)
   const [report, setReport] = useState<Report | null>(null)
   const [generatingReport, setGeneratingReport] = useState(false)
-  const [activeTab, setActiveTab] = useState<'searches' | 'report'>('searches')
-  
+  const [activeTab, setActiveTab] = useState<'searches' | 'report' | 'chat'>('searches')
+
+  // Chat states
+  const [chatMessages, setChatMessages] = useState<Message[]>([])
+  const [chatInput, setChatInput] = useState('')
+  const [loadingChat, setLoadingChat] = useState(false)
+
   // Search/Autocomplete states
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -70,8 +80,8 @@ export default function AdminPage() {
   useEffect(() => {
     if (!markets.length) return
     const query = searchQuery.toLowerCase()
-    const filtered = markets.filter(m => 
-      m.nome_mercado.toLowerCase().includes(query) || 
+    const filtered = markets.filter(m =>
+      m.nome_mercado.toLowerCase().includes(query) ||
       m.bairro_mercado?.toLowerCase().includes(query) ||
       m.cidade_mercado?.toLowerCase().includes(query)
     )
@@ -126,7 +136,7 @@ export default function AdminPage() {
 
   const generateReport = async () => {
     if (!selectedMarket) return
-    
+
     setGeneratingReport(true)
     try {
       const response = await fetch('/api/admin/report', {
@@ -149,11 +159,44 @@ export default function AdminPage() {
     }
   }
 
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (!chatInput.trim() || !selectedMarket) return
+
+    const newMessage: Message = { role: 'user', content: chatInput }
+    setChatMessages(prev => [...prev, newMessage])
+    setChatInput('')
+    setLoadingChat(true)
+
+    try {
+      const response = await fetch('/api/admin/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          marketId: selectedMarket.id_mercado,
+          messages: [...chatMessages, newMessage]
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: data.content }])
+      }
+    } catch (err) {
+      console.error('Error sending message:', err)
+    } finally {
+      setLoadingChat(false)
+    }
+  }
+
   const selectMarket = (market: Market) => {
     setSelectedMarket(market)
     setSearchQuery(market.nome_mercado)
     setIsSearchOpen(false)
+    setSearchQuery(market.nome_mercado)
+    setIsSearchOpen(false)
     setReport(null)
+    setChatMessages([]) // Reset chat on market change
   }
 
   if (!isAuthenticated) {
@@ -179,9 +222,8 @@ export default function AdminPage() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-gray-900 ${
-                      passwordError ? 'border-red-500 ring-red-100' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-gray-900 ${passwordError ? 'border-red-500 ring-red-100' : 'border-gray-300'
+                      }`}
                     placeholder="Digite a senha"
                   />
                   {passwordError && (
@@ -267,7 +309,7 @@ export default function AdminPage() {
                 </svg>
                 Seu Mercado
               </h2>
-              
+
               {/* Custom Autocomplete Input */}
               <div className="relative" ref={searchWrapperRef}>
                 <div className="relative">
@@ -289,7 +331,7 @@ export default function AdminPage() {
                     </svg>
                   </div>
                   {searchQuery && (
-                    <button 
+                    <button
                       onClick={() => {
                         setSearchQuery('')
                         setSelectedMarket(null)
@@ -316,13 +358,11 @@ export default function AdminPage() {
                         <button
                           key={market.id_mercado}
                           onClick={() => selectMarket(market)}
-                          className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex flex-col border-b border-gray-50 last:border-0 ${
-                            selectedMarket?.id_mercado === market.id_mercado ? 'bg-primary/5' : ''
-                          }`}
+                          className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex flex-col border-b border-gray-50 last:border-0 ${selectedMarket?.id_mercado === market.id_mercado ? 'bg-primary/5' : ''
+                            }`}
                         >
-                          <span className={`font-bold text-sm ${
-                            selectedMarket?.id_mercado === market.id_mercado ? 'text-primary' : 'text-gray-900'
-                          }`}>
+                          <span className={`font-bold text-sm ${selectedMarket?.id_mercado === market.id_mercado ? 'text-primary' : 'text-gray-900'
+                            }`}>
                             {market.nome_mercado}
                           </span>
                           <span className="text-xs text-gray-500">
@@ -342,7 +382,7 @@ export default function AdminPage() {
                     {selectedMarket.bairro_mercado && `${selectedMarket.bairro_mercado}, `}
                     {selectedMarket.cidade_mercado}
                   </p>
-                  
+
                   <div className="mt-6 flex flex-col gap-3">
                     <button
                       onClick={generateReport}
@@ -392,11 +432,10 @@ export default function AdminPage() {
                 <div className="flex border-b border-gray-100">
                   <button
                     onClick={() => setActiveTab('searches')}
-                    className={`flex-1 py-4 px-6 text-sm font-bold transition-colors relative ${
-                      activeTab === 'searches' 
-                        ? 'text-primary bg-primary/5' 
-                        : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
-                    }`}
+                    className={`flex-1 py-4 px-6 text-sm font-bold transition-colors relative ${activeTab === 'searches'
+                      ? 'text-primary bg-primary/5'
+                      : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+                      }`}
                   >
                     <div className="flex items-center justify-center gap-2">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -410,11 +449,10 @@ export default function AdminPage() {
                   </button>
                   <button
                     onClick={() => setActiveTab('report')}
-                    className={`flex-1 py-4 px-6 text-sm font-bold transition-colors relative ${
-                      activeTab === 'report' 
-                        ? 'text-primary bg-primary/5' 
-                        : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
-                    }`}
+                    className={`flex-1 py-4 px-6 text-sm font-bold transition-colors relative ${activeTab === 'report'
+                      ? 'text-primary bg-primary/5'
+                      : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+                      }`}
                   >
                     <div className="flex items-center justify-center gap-2">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -424,6 +462,23 @@ export default function AdminPage() {
                       {report && <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>}
                     </div>
                     {activeTab === 'report' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('chat')}
+                    className={`flex-1 py-4 px-6 text-sm font-bold transition-colors relative ${activeTab === 'chat'
+                      ? 'text-primary bg-primary/5'
+                      : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+                      }`}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                      </svg>
+                      Chat Business
+                    </div>
+                    {activeTab === 'chat' && (
                       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
                     )}
                   </button>
@@ -459,14 +514,13 @@ export default function AdminPage() {
                               className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                             >
                               <div className="flex items-center justify-between mb-3">
-                                <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-                                  search.tipo === 'product_search' ? 'bg-blue-50 text-blue-700' :
+                                <span className={`px-3 py-1 text-xs font-bold rounded-full ${search.tipo === 'product_search' ? 'bg-blue-50 text-blue-700' :
                                   search.tipo === 'cart_search' ? 'bg-green-50 text-green-700' :
-                                  'bg-gray-100 text-gray-700'
-                                }`}>
+                                    'bg-gray-100 text-gray-700'
+                                  }`}>
                                   {search.tipo === 'product_search' ? 'BUSCA DE PRODUTO' :
-                                   search.tipo === 'cart_search' ? 'OTIMIZAÇÃO DE CARRINHO' :
-                                   search.tipo.toUpperCase()}
+                                    search.tipo === 'cart_search' ? 'OTIMIZAÇÃO DE CARRINHO' :
+                                      search.tipo.toUpperCase()}
                                 </span>
                                 <span className="text-xs font-bold text-gray-500 flex items-center gap-1">
                                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -475,7 +529,7 @@ export default function AdminPage() {
                                   {new Date(search.created_at).toLocaleString('pt-BR')}
                                 </span>
                               </div>
-                              
+
                               <div className="bg-gray-50 rounded-lg p-3 font-mono text-xs text-gray-700 overflow-x-auto border border-gray-200 font-medium">
                                 {JSON.stringify(search.dados, null, 2)}
                               </div>
@@ -517,7 +571,7 @@ export default function AdminPage() {
                               Exportar
                             </button>
                           </div>
-                          
+
                           <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-primary">
                             <ReactMarkdown>{report.content}</ReactMarkdown>
                           </div>
@@ -545,6 +599,88 @@ export default function AdminPage() {
                           </button>
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {activeTab === 'chat' && (
+                    <div className="h-full flex flex-col h-[600px]">
+                      {chatMessages.length === 0 ? (
+                        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                          <div className="w-16 h-16 bg-white rounded-2xl shadow-lg shadow-primary/10 flex items-center justify-center mb-6">
+                            <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">Assistente de Negócios</h3>
+                          <p className="text-gray-600 font-medium max-w-sm mb-8">
+                            Tire dúvidas sobre seus produtos, preços e tendências de mercado.
+                          </p>
+                          <div className="grid grid-cols-1 gap-3 w-full max-w-md">
+                            {['Devo comprar tomates?', 'Qual preço cobrar no tomate?', 'Quais produtos mais buscados?'].map((q) => (
+                              <button
+                                key={q}
+                                onClick={() => {
+                                  setChatInput(q)
+                                  // Small hack to trigger submit after state update
+                                  setTimeout(() => document.getElementById('chat-submit')?.click(), 0)
+                                }}
+                                className="p-4 bg-white border border-gray-200 rounded-xl text-left text-sm font-medium hover:border-primary hover:text-primary transition-colors shadow-sm"
+                              >
+                                "{q}"
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                          {chatMessages.map((msg, i) => (
+                            <div
+                              key={i}
+                              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                            >
+                              <div
+                                className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
+                                    ? 'bg-primary text-white rounded-br-none'
+                                    : 'bg-white border border-gray-100 text-gray-800 rounded-bl-none shadow-sm'
+                                  }`}
+                              >
+                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                              </div>
+                            </div>
+                          ))}
+                          {loadingChat && (
+                            <div className="flex justify-start">
+                              <div className="bg-gray-100 p-4 rounded-2xl rounded-bl-none flex items-center gap-2">
+                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="p-4 bg-white border-t border-gray-100">
+                        <form onSubmit={handleSendMessage} className="relative">
+                          <input
+                            type="text"
+                            value={chatInput}
+                            onChange={(e) => setChatInput(e.target.value)}
+                            placeholder="Pergunte sobre seu negócio..."
+                            className="w-full pl-4 pr-12 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder-gray-400 font-medium"
+                          />
+                          <button
+                            id="chat-submit"
+                            type="submit"
+                            disabled={!chatInput.trim() || loadingChat}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-primary hover:bg-primary/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                          </button>
+                        </form>
+                      </div>
                     </div>
                   )}
                 </div>

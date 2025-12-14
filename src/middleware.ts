@@ -59,7 +59,7 @@ export async function middleware(request: NextRequest) {
 
   if (isAuthRoute && user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/upload'
+    url.pathname = '/app'
     return NextResponse.redirect(url)
   }
 

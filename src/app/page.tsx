@@ -33,9 +33,14 @@ export default async function HomePage() {
 
         <nav className="flex items-center gap-4">
           {user ? (
-            <Link href="/upload" className="btn btn-primary">
-              Contribuir Preços
-            </Link>
+            <>
+              <Link href="/app?tab=contribuir" className="btn btn-secondary">
+                Contribuir Preços
+              </Link>
+              <Link href="/app" className="btn btn-primary">
+                Abrir App
+              </Link>
+            </>
           ) : (
             <>
               <Link href="/login" className="btn btn-secondary">
@@ -83,18 +88,18 @@ export default async function HomePage() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href={user ? "/upload" : "/signup"} className="btn btn-primary text-lg px-8 py-4">
+            <Link href="/app" className="btn btn-primary text-lg px-8 py-4">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              Comparar Preços
+            </Link>
+            <Link href={user ? "/app?tab=contribuir" : "/signup"} className="btn btn-secondary text-lg px-8 py-4">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              Enviar Fotos
-            </Link>
-            <Link href="/search" className="btn btn-secondary text-lg px-8 py-4">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              Pesquisar Preços
+              Contribuir Preços
             </Link>
           </div>
         </div>
@@ -173,8 +178,12 @@ export default async function HomePage() {
             <span>•</span>
             <span>Palantir for Food</span>
           </div>
-          <div className="text-muted text-sm">
-            Democratizando o acesso a alimentos saudáveis no Brasil
+          <div className="flex items-center gap-4 text-muted text-sm">
+            <Link href="/admin" className="hover:text-primary transition-colors">
+              Área do Comerciante
+            </Link>
+            <span>•</span>
+            <span>Democratizando o acesso a alimentos saudáveis no Brasil</span>
           </div>
         </div>
       </footer>

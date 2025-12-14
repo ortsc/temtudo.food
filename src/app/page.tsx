@@ -113,15 +113,15 @@ export default async function HomePage() {
         <div className="w-full max-w-6xl mt-24 border-y border-white/5 bg-black/20 backdrop-blur-md">
           <div className="grid grid-cols-3 divide-x divide-white/5">
             <div className="p-6">
-              <div className="text-xs font-mono text-muted uppercase tracking-wider mb-1">Datapoints Coletados</div>
+              <div className="text-xs font-mono text-muted uppercase tracking-wider mb-1">Produtos</div>
               <div className="text-3xl font-bold font-mono text-white">{produtosCount.toLocaleString('pt-BR')}</div>
             </div>
             <div className="p-6">
-              <div className="text-xs font-mono text-muted uppercase tracking-wider mb-1">Fontes Monitoradas</div>
+              <div className="text-xs font-mono text-muted uppercase tracking-wider mb-1">Mercados</div>
               <div className="text-3xl font-bold font-mono text-white">{mercadosCount.toLocaleString('pt-BR')}</div>
             </div>
             <div className="p-6">
-              <div className="text-xs font-mono text-muted uppercase tracking-wider mb-1">Analistas Ativos</div>
+              <div className="text-xs font-mono text-muted uppercase tracking-wider mb-1">Contribuidores</div>
               <div className="text-3xl font-bold font-mono text-white">{contribuidoresCount.toLocaleString('pt-BR')}</div>
             </div>
           </div>

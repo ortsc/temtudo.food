@@ -57,7 +57,7 @@ interface ShoppingCartProps {
   onAddItem: (product: Product) => void
   onMarketSelect?: (marketId: number) => void
   userLocation: { lat: number; lng: number } | null
-  
+
   // Lifted state props
   result: CartOptimizationResult | null
   setResult: (result: CartOptimizationResult | null) => void
@@ -65,13 +65,13 @@ interface ShoppingCartProps {
   setShowResult: (show: boolean) => void
 }
 
-export default function ShoppingCart({ 
-  items, 
-  onRemoveItem, 
-  onUpdateQuantity, 
-  onClearCart, 
-  onAddItem, 
-  onMarketSelect, 
+export default function ShoppingCart({
+  items,
+  onRemoveItem,
+  onUpdateQuantity,
+  onClearCart,
+  onAddItem,
+  onMarketSelect,
   userLocation,
   result,
   setResult,
@@ -79,6 +79,7 @@ export default function ShoppingCart({
   setShowResult
 }: ShoppingCartProps) {
   const [loading, setLoading] = useState(false)
+  const [distanceFilter, setDistanceFilter] = useState<number | null>(null)
 
   const optimizeCart = async () => {
     if (items.length === 0) return
@@ -91,10 +92,10 @@ export default function ShoppingCart({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          products: items.map(i => ({ 
-            id_produto: i.id_produto, 
+          products: items.map(i => ({
+            id_produto: i.id_produto,
             nome_produto: i.nome_produto,
-            quantidade: i.quantidade 
+            quantidade: i.quantidade
           })),
           userLat: userLocation?.lat,
           userLng: userLocation?.lng,
@@ -106,7 +107,7 @@ export default function ShoppingCart({
       if (data.success) {
         setResult(data.result)
         setShowResult(true)
-        
+
         trackEvent('cart_optimize', {
           productCount: items.length,
           products: items.map(i => i.nome_produto),
@@ -145,8 +146,8 @@ export default function ShoppingCart({
             </span>
           )}
         </h3>
-        
-        <ProductSearchInput 
+
+        <ProductSearchInput
           onSelect={handleProductSelect}
           selectedProduct={null}
         />
@@ -177,11 +178,11 @@ export default function ShoppingCart({
                   <p className="text-xs text-gray-500 mb-2">
                     {item.marca_produto || item.categoria || 'Sem marca'}
                   </p>
-                  
+
                   {/* Quantity Controls */}
                   <div className="flex items-center gap-3">
                     <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                      <button 
+                      <button
                         onClick={() => onUpdateQuantity(item.id_produto, -1)}
                         disabled={item.quantidade <= 1}
                         className="w-6 h-6 flex items-center justify-center rounded-md bg-white shadow-sm text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:text-primary transition-colors"
@@ -189,7 +190,7 @@ export default function ShoppingCart({
                         -
                       </button>
                       <span className="w-8 text-center text-sm font-semibold text-gray-900">{item.quantidade}</span>
-                      <button 
+                      <button
                         onClick={() => onUpdateQuantity(item.id_produto, 1)}
                         className="w-6 h-6 flex items-center justify-center rounded-md bg-white shadow-sm text-gray-600 hover:text-primary transition-colors"
                       >
@@ -223,67 +224,86 @@ export default function ShoppingCart({
               )}
             </div>
 
+            {/* Distance Filter */}
+            <div className="flex items-center gap-2 mb-2 overflow-x-auto pb-1">
+              <span className="text-xs text-gray-500 whitespace-nowrap">Distância:</span>
+              <div className="flex gap-1">
+                {[null, 1, 3, 5, 10].map((km) => (
+                  <button
+                    key={km ?? 'all'}
+                    onClick={() => setDistanceFilter(km)}
+                    className={`px-3 py-1 text-xs rounded-full transition-colors whitespace-nowrap ${distanceFilter === km
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                  >
+                    {km === null ? 'Todos' : `${km} km`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* List of Markets */}
-            {result.potentialMarkets.map((market, index) => {
-              const isWinner = index === 0
-              const percentDiff = index > 0 && result.bestMarket 
-                ? ((market.totalPrice - result.bestMarket.totalPrice) / result.bestMarket.totalPrice) * 100 
-                : 0
+            {result.potentialMarkets
+              .filter(m => distanceFilter === null || (m.distance !== undefined && m.distance <= distanceFilter))
+              .map((market, index) => {
+                const isWinner = index === 0
+                const percentDiff = index > 0 && result.bestMarket
+                  ? ((market.totalPrice - result.bestMarket.totalPrice) / result.bestMarket.totalPrice) * 100
+                  : 0
 
-              return (
-                <div 
-                  key={market.id_mercado}
-                  onClick={() => onMarketSelect?.(market.id_mercado)}
-                  className={`relative rounded-xl border p-4 transition-all cursor-pointer ${
-                    isWinner 
-                      ? 'bg-white border-green-500 ring-1 ring-green-500 shadow-md z-10' 
+                return (
+                  <div
+                    key={market.id_mercado}
+                    onClick={() => onMarketSelect?.(market.id_mercado)}
+                    className={`relative rounded-xl border p-4 transition-all cursor-pointer ${isWinner
+                      ? 'bg-white border-green-500 ring-1 ring-green-500 shadow-md z-10'
                       : 'bg-white border-gray-100 hover:border-gray-300'
-                  }`}
-                >
-                  {isWinner && (
-                    <div className="absolute -top-3 left-4 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
-                      Melhor Opção
-                    </div>
-                  )}
+                      }`}
+                  >
+                    {isWinner && (
+                      <div className="absolute -top-3 left-4 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                        Melhor Opção
+                      </div>
+                    )}
 
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h5 className="font-bold text-gray-900">{market.nome_mercado}</h5>
-                      <p className="text-xs text-gray-500">
-                        {market.bairro_mercado && `${market.bairro_mercado} • `}
-                        {market.distance && `${market.distance.toFixed(1)} km`}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`text-xl font-bold ${isWinner ? 'text-green-600' : 'text-gray-900'}`}>
-                        R$ {market.totalPrice.toFixed(2).replace('.', ',')}
-                      </p>
-                      {index > 0 && (
-                        <p className="text-xs text-red-500 font-medium">
-                          +{percentDiff.toFixed(0)}%
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h5 className="font-bold text-gray-900">{market.nome_mercado}</h5>
+                        <p className="text-xs text-gray-500">
+                          {market.bairro_mercado && `${market.bairro_mercado} • `}
+                          {market.distance && `${market.distance.toFixed(1)} km`}
                         </p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-xl font-bold ${isWinner ? 'text-green-600' : 'text-gray-900'}`}>
+                          R$ {market.totalPrice.toFixed(2).replace('.', ',')}
+                        </p>
+                        {index > 0 && (
+                          <p className="text-xs text-red-500 font-medium">
+                            +{percentDiff.toFixed(0)}%
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className={`px-2 py-1 rounded-md ${market.availableCount === items.length
+                        ? 'bg-green-50 text-green-700'
+                        : 'bg-yellow-50 text-yellow-700'
+                        }`}>
+                        {market.availableCount} / {items.length} itens
+                      </span>
+
+                      {market.missingProducts.length > 0 && (
+                        <span className="text-gray-400">
+                          Faltam: {market.missingProducts.length}
+                        </span>
                       )}
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <span className={`px-2 py-1 rounded-md ${
-                      market.availableCount === items.length 
-                        ? 'bg-green-50 text-green-700' 
-                        : 'bg-yellow-50 text-yellow-700'
-                    }`}>
-                      {market.availableCount} / {items.length} itens
-                    </span>
-                    
-                    {market.missingProducts.length > 0 && (
-                      <span className="text-gray-400">
-                        Faltam: {market.missingProducts.length}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
           </div>
         )}
       </div>
@@ -312,7 +332,7 @@ export default function ShoppingCart({
               </>
             )}
           </button>
-          
+
           <button
             onClick={onClearCart}
             className="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 transition-colors"

@@ -19,35 +19,35 @@ export default async function HomePage() {
   const contribuidoresCount = usuariosResult.count || 0
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="min-h-screen flex flex-col font-sans">
       {/* Header */}
-      <header className="w-full p-6 flex items-center justify-between">
+      <header className="w-full p-6 flex items-center justify-between border-b border-white/5 backdrop-blur-sm fixed top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-primary/20">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
             </svg>
           </div>
-          <span className="text-xl font-bold">Temtudo</span>
+          <span className="text-xl font-bold tracking-tight">Temtudo<span className="text-primary">.data</span></span>
         </div>
 
         <nav className="flex items-center gap-4">
           {user ? (
             <>
-              <Link href="/app?tab=contribuir" className="btn btn-secondary">
-                Contribuir Preços
+              <Link href="/admin" className="btn btn-secondary text-sm">
+                Painel de Dados
               </Link>
-              <Link href="/app" className="btn btn-primary">
-                Abrir App
+              <Link href="/app" className="btn btn-primary text-sm shadow-lg shadow-primary/20">
+                Acessar Plataforma
               </Link>
             </>
           ) : (
             <>
-              <Link href="/login" className="btn btn-secondary">
-                Entrar
+              <Link href="/login" className="btn btn-secondary text-sm hover:text-white transition-colors">
+                Login
               </Link>
-              <Link href="/signup" className="btn btn-primary">
-                Cadastrar
+              <Link href="/signup" className="btn btn-primary text-sm shadow-lg shadow-primary/20">
+                Começar Agora
               </Link>
             </>
           )}
@@ -55,135 +55,164 @@ export default async function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-20">
+      <section className="flex-1 flex flex-col items-center justify-center text-center px-6 pt-32 pb-20 relative overflow-hidden">
         {/* Background decoration */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-accent/5 blur-3xl" />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 blur-[120px] rounded-full opacity-50" />
         </div>
 
-        <div className="max-w-4xl animate-fade-in">
+        <div className="max-w-5xl animate-fade-in relative z-10">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            Mapeando preços em tempo real
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-mono mb-8 uppercase tracking-wider">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </span>
+            Price Intelligence Engine 2.0
           </div>
 
           {/* Main heading */}
-          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
-            Alimentos saudáveis
+          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-8 tracking-tight">
+            Dados removem
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
-              a preços justos
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-primary-dark">
+              ineficiências nos preços
             </span>
           </h1>
 
-          <p className="text-xl text-muted max-w-2xl mx-auto mb-10">
-            Colabore com a comunidade enviando fotos de prateleiras. 
-            Nossa IA extrai automaticamente produtos e preços para mapear 
-            os melhores lugares para comprar no Brasil.
+          <p className="text-xl text-muted max-w-2xl mx-auto mb-12 leading-relaxed">
+            Somos uma <span className="text-white font-medium">empresa de dados</span> que democratiza o acesso à inteligência de mercado.
+            Nossa tecnologia permite que o pequeno varejista compita de igual para igual com os gigantes do setor.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/app" className="btn btn-primary text-lg px-8 py-4">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
-              Comparar Preços
+            <Link href="/app" className="group relative btn btn-primary text-lg px-8 py-4 overflow-hidden rounded-xl shadow-xl shadow-primary/20">
+              <span className="relative z-10 flex items-center">
+                Ver Dados em Tempo Real
+                <svg className="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </span>
             </Link>
-            <Link href={user ? "/app?tab=contribuir" : "/signup"} className="btn btn-secondary text-lg px-8 py-4">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              Contribuir Preços
+            <Link href={user ? "/admin" : "/signup"} className="btn btn-secondary text-lg px-8 py-4 rounded-xl hover:bg-white/5 border border-white/10">
+              <span className="flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Conhecer Planos de Dados
+              </span>
             </Link>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-8 mt-20 animate-fade-in delay-200">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-primary">{produtosCount}</div>
-            <div className="text-sm text-muted mt-1">Produtos</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-primary">{mercadosCount}</div>
-            <div className="text-sm text-muted mt-1">Mercados</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-primary">{contribuidoresCount}</div>
-            <div className="text-sm text-muted mt-1">Contribuidores</div>
+        {/* Live Data Strip */}
+        <div className="w-full max-w-6xl mt-24 border-y border-white/5 bg-black/20 backdrop-blur-md">
+          <div className="grid grid-cols-3 divide-x divide-white/5">
+            <div className="p-6">
+              <div className="text-xs font-mono text-muted uppercase tracking-wider mb-1">Datapoints Coletados</div>
+              <div className="text-3xl font-bold font-mono text-white">{produtosCount.toLocaleString('pt-BR')}</div>
+            </div>
+            <div className="p-6">
+              <div className="text-xs font-mono text-muted uppercase tracking-wider mb-1">Fontes Monitoradas</div>
+              <div className="text-3xl font-bold font-mono text-white">{mercadosCount.toLocaleString('pt-BR')}</div>
+            </div>
+            <div className="p-6">
+              <div className="text-xs font-mono text-muted uppercase tracking-wider mb-1">Analistas Ativos</div>
+              <div className="text-3xl font-bold font-mono text-white">{contribuidoresCount.toLocaleString('pt-BR')}</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-6">
+      {/* Feature Section: The problem & Solution */}
+      <section className="py-24 px-6 bg-black/20 relative">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Como funciona</h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="card p-6 text-center animate-fade-in">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <div className="inline-block px-3 py-1 mb-4 text-xs font-mono text-accent border border-accent/20 rounded-full bg-accent/5">
+                NÍVELANDO O JOGO
               </div>
-              <h3 className="text-lg font-semibold mb-2">Tire uma foto</h3>
-              <p className="text-muted text-sm">
-                Fotografe a prateleira do supermercado com produtos e preços visíveis
-              </p>
+              <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
+                O pequeno agora compete com o gigante.
+              </h2>
+              <div className="space-y-6 text-lg text-muted">
+                <p>
+                  As grandes redes de varejo sempre tiveram acesso a dados privilegiados. Isso gerava uma assimetria injusta que esmagava o pequeno comerciante.
+                </p>
+                <p>
+                  <strong className="text-white">A Temtudo mudou as regras.</strong>
+                </p>
+                <p>
+                  Nossos algoritmos analisam milhares de preços em tempo real, permitindo que mercearias, hortifrutis e pequenos mercados otimizem suas margens e ofereçam preços agressivos onde realmente importa.
+                </p>
+                <div className="pt-4">
+                  <Link href="/cases" className="text-primary hover:text-primary-light font-medium inline-flex items-center">
+                    Ler estudos de caso
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
             </div>
 
-            {/* Feature 2 */}
-            <div className="card p-6 text-center animate-fade-in delay-100">
-              <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+            <div className="relative">
+              <div className="absolute -inset-4 bg-gradient-to-r from-primary to-accent opacity-20 blur-2xl rounded-[32px]" />
+              <div className="relative bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 shadow-2xl">
+                {/* Abstract UI representation of data vs price */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-sm text-muted mb-6">
+                    <span>Performance de Preço</span>
+                    <span className="text-success">+15% Margem</span>
+                  </div>
+                  <div className="h-64 w-full bg-gradient-to-b from-primary/10 to-transparent rounded-lg border border-primary/20 relative overflow-hidden">
+                    <div className="absolute bottom-0 left-0 right-0 h-[60%] bg-primary/20 transform skew-y-6 origin-bottom-left" />
+                    <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-accent/20 transform -skew-y-3 origin-bottom-right" />
+                    {/* Grid lines */}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-1 bg-white/5 rounded-lg p-3">
+                      <div className="text-xs text-muted mb-1">Preço Médio</div>
+                      <div className="text-lg font-mono text-white">R$ 14,50</div>
+                    </div>
+                    <div className="flex-1 bg-primary/10 border border-primary/20 rounded-lg p-3">
+                      <div className="text-xs text-primary mb-1">Preço Otimizado</div>
+                      <div className="text-lg font-mono text-white">R$ 12,90</div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold mb-2">IA processa</h3>
-              <p className="text-muted text-sm">
-                Nossa inteligência artificial identifica produtos, marcas e preços automaticamente
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="card p-6 text-center animate-fade-in delay-200">
-              <div className="w-14 h-14 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Compare preços</h3>
-              <p className="text-muted text-sm">
-                Encontre onde comprar mais barato na sua região
-              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-6 border-t border-card-border">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-muted text-sm">
-            <span>© 2024 Temtudo</span>
-            <span>•</span>
-            <span>Palantir for Food</span>
+      <footer className="py-12 px-6 border-t border-white/5 bg-black/40">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded bg-primary flex items-center justify-center text-xs font-bold text-white">T</div>
+              <span className="font-bold text-white">Temtudo Data Inc.</span>
+            </div>
+            <p className="text-xs text-muted max-w-xs">
+              Transformando dados brutos em competitividade para o varejo brasileiro.
+            </p>
           </div>
-          <div className="flex items-center gap-4 text-muted text-sm">
-            <Link href="/admin" className="hover:text-primary transition-colors">
-              Área do Comerciante
-            </Link>
-            <span>•</span>
-            <span>Democratizando o acesso a alimentos saudáveis no Brasil</span>
+
+          <div className="flex items-center gap-8 text-sm text-muted">
+            <Link href="/terms" className="hover:text-white transition-colors">Termos de Uso</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacidade</Link>
+            <Link href="/admin" className="hover:text-white transition-colors">Portal Corporativo</Link>
+          </div>
+
+          <div className="text-xs text-muted">
+            © 2024 Temtudo Data. Todos os direitos reservados.
           </div>
         </div>
       </footer>

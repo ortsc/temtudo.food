@@ -4,8 +4,7 @@ import * as path from 'path'
 
 // Supabase credentials
 const supabaseUrl = 'https://juiioeyjnlmqihhockjk.supabase.co'
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1aWlvZXlqbmxtcWloaG9ja2prIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTYxMjg4MCwiZXhwIjoyMDgxMTg4ODgwfQ.IQvs8D9r6M07YPeiyFyBSdx3ribXLpkgxEE7rcsWQ9A'
-
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 interface Supermarket {
@@ -39,7 +38,7 @@ async function importMercados() {
 
   // Filter only supermarkets (exclude other categories if needed)
   const validCategories = ['Supermercado', 'Mercado', 'Hipermercado', 'Atacadista', 'Mercado de produtos agrícolas']
-  const filteredMarkets = supermarkets.filter(s => 
+  const filteredMarkets = supermarkets.filter(s =>
     validCategories.some(cat => s.categoryName?.toLowerCase().includes(cat.toLowerCase()))
   )
 
@@ -92,8 +91,8 @@ async function importMercados() {
 
   // Remove duplicates based on name + address
   const uniqueMarkets = mercadosData.filter((market, index, self) =>
-    index === self.findIndex(m => 
-      m.nome_mercado === market.nome_mercado && 
+    index === self.findIndex(m =>
+      m.nome_mercado === market.nome_mercado &&
       m.endereco_mercado === market.endereco_mercado
     )
   )
@@ -107,7 +106,7 @@ async function importMercados() {
 
   for (let i = 0; i < uniqueMarkets.length; i += batchSize) {
     const batch = uniqueMarkets.slice(i, i + batchSize)
-    
+
     const { data, error } = await supabase
       .from('Mercados')
       .insert(batch)

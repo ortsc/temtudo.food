@@ -127,7 +127,7 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   const R = 6371
   const dLat = (lat2 - lat1) * Math.PI / 180
   const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = 
+  const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
     Math.sin(dLng / 2) * Math.sin(dLng / 2)
@@ -152,11 +152,11 @@ function AppContent() {
   const [user, setUser] = useState<User | null>(null)
   const [showAddMarketModal, setShowAddMarketModal] = useState(false)
   const [cartItems, setCartItems] = useState<CartItem[]>([])
-  
+
   // Lifted state for ShoppingCart
   const [cartResult, setCartResult] = useState<CartOptimizationResult | null>(null)
   const [showCartResult, setShowCartResult] = useState(false)
-  
+
   const mapRef = useRef<SimpleMapRef>(null)
   const supabase = createClient()
   const searchParams = useSearchParams()
@@ -176,7 +176,7 @@ function AppContent() {
       setUser(data.user)
     }
     checkAuth()
-    
+
     // Initialize anonymous session for tracking
     initSession()
   }, [supabase.auth])
@@ -192,10 +192,10 @@ function AppContent() {
           })
           setLocationAccuracy(position.coords.accuracy)
         },
-        () => {},
+        () => { },
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
       )
-      
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setUserLocation({
@@ -224,14 +224,14 @@ function AppContent() {
       try {
         const response = await fetch('/api/markets')
         const contentType = response.headers.get('content-type')
-        
+
         if (!contentType || !contentType.includes('application/json')) {
           console.error('Invalid response from markets API')
           return
         }
 
         const data = await response.json()
-        
+
         if (data.success && data.markets) {
           setAllMarkets(data.markets)
         }
@@ -252,7 +252,7 @@ function AppContent() {
     try {
       const response = await fetch(`/api/products-by-market?marketId=${marketId}`)
       const data = await response.json()
-      
+
       if (data.success && data.products) {
         setMarketProducts(data.products)
       }
@@ -266,7 +266,7 @@ function AppContent() {
   // Calculate distances and sort
   const marketsWithDistance = allMarkets.map(market => ({
     ...market,
-    distance: userLocation 
+    distance: userLocation
       ? calculateDistance(userLocation.lat, userLocation.lng, market.lat, market.lng)
       : undefined
   })).sort((a, b) => {
@@ -284,7 +284,7 @@ function AppContent() {
     : marketsWithDistance
 
   // Get selected market details
-  const selectedMarketDetails = selectedMarketId 
+  const selectedMarketDetails = selectedMarketId
     ? marketsWithDistance.find(m => m.id_mercado === selectedMarketId)
     : null
 
@@ -292,7 +292,7 @@ function AppContent() {
     setSelectedMarketId(id)
     setActiveTab('mercados')
     mapRef.current?.goToMarker(id)
-    
+
     // Track market view
     const market = marketsWithDistance.find(m => m.id_mercado === id)
     if (market) {
@@ -318,7 +318,7 @@ function AppContent() {
     setSelectedMarketId(marketId)
     // Here we switch to a specialized view inside 'mercados' tab instead of switching to products tab
     // We'll create a temporary override state or just use activeTab logic
-    setActiveTab('mercados') 
+    setActiveTab('mercados')
     setProductViewMode('market-products')
     fetchMarketProducts(marketId)
   }
@@ -331,11 +331,11 @@ function AppContent() {
   }
 
   const [locationLoading, setLocationLoading] = useState(false)
-  
+
   const handleGoToMyLocation = () => {
     setSelectedMarketId(null)
     setLocationLoading(true)
-    
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -385,8 +385,8 @@ function AppContent() {
     setCartItems(prev => {
       const existing = prev.find(item => item.id_produto === product.id_produto)
       if (existing) {
-        return prev.map(item => 
-          item.id_produto === product.id_produto 
+        return prev.map(item =>
+          item.id_produto === product.id_produto
             ? { ...item, quantidade: item.quantidade + 1 }
             : item
         )
@@ -433,7 +433,7 @@ function AppContent() {
         {/* Header */}
         <header className="bg-gradient-to-r from-primary to-primary-dark text-white px-4 md:px-6 py-3 md:py-4 flex items-center justify-between flex-shrink-0 z-50">
           <div className="flex items-center gap-3">
-            <Link 
+            <Link
               href="/"
               className="flex items-center gap-2 hover:opacity-90 transition-opacity"
             >
@@ -456,7 +456,7 @@ function AppContent() {
               </svg>
               Adicionar Mercado
             </button>
-            
+
             {user ? (
               <div className="flex items-center gap-2 md:gap-3">
                 <button
@@ -490,7 +490,7 @@ function AppContent() {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-          
+
           {/* Map Section */}
           <div className="h-[45vh] lg:h-full lg:flex-1 bg-gray-200 relative flex-shrink-0">
             {mapsLoaded && userLocation && !loadingAllMarkets ? (
@@ -515,11 +515,10 @@ function AppContent() {
             {/* My Location Button */}
             <div className="absolute bottom-20 right-4 z-10 flex flex-col items-end gap-2">
               {locationAccuracy && (
-                <div className={`text-xs px-2 py-1 rounded-full shadow ${
-                  locationAccuracy <= 50 ? 'bg-green-100 text-green-700' :
-                  locationAccuracy <= 500 ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-red-100 text-red-700'
-                }`}>
+                <div className={`text-xs px-2 py-1 rounded-full shadow ${locationAccuracy <= 50 ? 'bg-green-100 text-green-700' :
+                    locationAccuracy <= 500 ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                  }`}>
                   ±{Math.round(locationAccuracy)}m
                 </div>
               )}
@@ -584,7 +583,7 @@ function AppContent() {
                   tier={selectedMarketDetails.tier}
                   distance={selectedMarketDetails.distance}
                   onClose={() => setSelectedMarketId(null)}
-                  onViewProducts={selectedMarketDetails.productCount > 0 
+                  onViewProducts={selectedMarketDetails.productCount > 0
                     ? () => handleViewMarketProducts(selectedMarketDetails.id_mercado)
                     : undefined
                   }
@@ -605,16 +604,15 @@ function AppContent() {
 
           {/* Sidebar */}
           <div className="flex-1 lg:w-[400px] lg:flex-none flex flex-col bg-gray-50 overflow-hidden">
-            
+
             {/* Tabs */}
             <div className="flex bg-white border-b border-gray-100 flex-shrink-0">
               <button
                 onClick={() => setActiveTab('carrinho')}
-                className={`flex-1 py-3 px-4 text-sm font-semibold transition-colors relative ${
-                  activeTab === 'carrinho' 
-                    ? 'text-primary' 
+                className={`flex-1 py-3 px-4 text-sm font-semibold transition-colors relative ${activeTab === 'carrinho'
+                    ? 'text-primary'
                     : 'text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -633,11 +631,10 @@ function AppContent() {
               </button>
               <button
                 onClick={() => setActiveTab('mercados')}
-                className={`flex-1 py-3 px-4 text-sm font-semibold transition-colors relative ${
-                  activeTab === 'mercados'
-                    ? 'text-primary' 
+                className={`flex-1 py-3 px-4 text-sm font-semibold transition-colors relative ${activeTab === 'mercados'
+                    ? 'text-primary'
                     : 'text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -649,32 +646,29 @@ function AppContent() {
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
                 )}
               </button>
-              {user && (
-                <button
-                  onClick={() => setActiveTab('contribuir')}
-                  className={`flex-1 py-3 px-4 text-sm font-semibold transition-colors relative ${
-                    activeTab === 'contribuir' 
-                      ? 'text-primary' 
-                      : 'text-gray-500 hover:text-gray-700'
+              <button
+                onClick={() => setActiveTab('contribuir')}
+                className={`flex-1 py-3 px-4 text-sm font-semibold transition-colors relative ${activeTab === 'contribuir'
+                    ? 'text-primary'
+                    : 'text-gray-500 hover:text-gray-700'
                   }`}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Contribuir
-                  </div>
-                  {activeTab === 'contribuir' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
-                  )}
-                </button>
-              )}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Contribuir
+                </div>
+                {activeTab === 'contribuir' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
+                )}
+              </button>
             </div>
 
             {/* Tab Content */}
             <div className="flex-1 overflow-y-auto">
-              
+
               {/* Carrinho Tab */}
               {activeTab === 'carrinho' && (
                 <div className="h-full">
@@ -710,21 +704,19 @@ function AppContent() {
                           </svg>
                           Voltar para lista
                         </button>
-                        
+
                         <div className="bg-white rounded-xl p-4 border border-gray-100">
                           <div className="flex items-center gap-3">
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                              viewingMarket.tier === 'cheap' ? 'bg-green-100' :
-                              viewingMarket.tier === 'medium' ? 'bg-orange-100' :
-                              viewingMarket.tier === 'expensive' ? 'bg-red-100' :
-                              'bg-gray-100'
-                            }`}>
-                              <svg className={`w-6 h-6 ${
-                                viewingMarket.tier === 'cheap' ? 'text-green-600' :
-                                viewingMarket.tier === 'medium' ? 'text-orange-600' :
-                                viewingMarket.tier === 'expensive' ? 'text-red-600' :
-                                'text-gray-400'
-                              }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${viewingMarket.tier === 'cheap' ? 'bg-green-100' :
+                                viewingMarket.tier === 'medium' ? 'bg-orange-100' :
+                                  viewingMarket.tier === 'expensive' ? 'bg-red-100' :
+                                    'bg-gray-100'
+                              }`}>
+                              <svg className={`w-6 h-6 ${viewingMarket.tier === 'cheap' ? 'text-green-600' :
+                                  viewingMarket.tier === 'medium' ? 'text-orange-600' :
+                                    viewingMarket.tier === 'expensive' ? 'text-red-600' :
+                                      'text-gray-400'
+                                }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                               </svg>
                             </div>
@@ -795,11 +787,10 @@ function AppContent() {
                               <button
                                 key={km ?? 'all'}
                                 onClick={() => setDistanceFilter(km)}
-                                className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                                  distanceFilter === km
+                                className={`px-3 py-1 text-xs rounded-full transition-colors ${distanceFilter === km
                                     ? 'bg-primary text-white'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
+                                  }`}
                               >
                                 {km === null ? 'Todos' : `${km} km`}
                               </button>
@@ -813,21 +804,19 @@ function AppContent() {
                           <div className="flex gap-1">
                             <button
                               onClick={() => setSortMode('distance')}
-                              className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                                sortMode === 'distance'
+                              className={`px-3 py-1 text-xs rounded-full transition-colors ${sortMode === 'distance'
                                   ? 'bg-primary text-white'
                                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
+                                }`}
                             >
                               Distância
                             </button>
                             <button
                               onClick={() => setSortMode('price')}
-                              className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                                sortMode === 'price'
+                              className={`px-3 py-1 text-xs rounded-full transition-colors ${sortMode === 'price'
                                   ? 'bg-primary text-white'
                                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
+                                }`}
                             >
                               Preço
                             </button>
@@ -851,7 +840,7 @@ function AppContent() {
                             tier={selectedMarketDetails.tier}
                             distance={selectedMarketDetails.distance}
                             onClose={() => setSelectedMarketId(null)}
-                            onViewProducts={selectedMarketDetails.productCount > 0 
+                            onViewProducts={selectedMarketDetails.productCount > 0
                               ? () => handleViewMarketProducts(selectedMarketDetails.id_mercado)
                               : undefined
                             }
@@ -894,64 +883,61 @@ function AppContent() {
                             .filter(m => m.id_mercado !== selectedMarketId)
                             .slice(0, 15)
                             .map((market) => (
-                            <button
-                              key={market.id_mercado}
-                              onClick={() => handleMarketSelect(market.id_mercado)}
-                              className="w-full bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all text-left"
-                            >
-                              <div className="flex items-start gap-3">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                                  market.tier === 'cheap' ? 'bg-green-100' :
-                                  market.tier === 'medium' ? 'bg-orange-100' :
-                                  market.tier === 'expensive' ? 'bg-red-100' :
-                                  'bg-gray-100'
-                                }`}>
-                                  <svg className={`w-5 h-5 ${
-                                    market.tier === 'cheap' ? 'text-green-600' :
-                                    market.tier === 'medium' ? 'text-orange-600' :
-                                    market.tier === 'expensive' ? 'text-red-600' :
-                                    'text-gray-400'
-                                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                  </svg>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="font-semibold text-gray-900 truncate">{market.nome_mercado}</h3>
-                                  {market.bairro_mercado && (
-                                    <p className="text-sm text-gray-500 truncate">{market.bairro_mercado}</p>
-                                  )}
-                                  <div className="flex items-center gap-3 mt-1">
-                                    {market.distance !== undefined && (
-                                      <span className="text-xs text-gray-400 flex items-center gap-1">
-                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        </svg>
-                                        {market.distance.toFixed(1)} km
-                                      </span>
-                                    )}
-                                    {market.productCount > 0 && (
-                                      <span className="text-xs text-gray-400">
-                                        {market.productCount} produtos
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                {market.avgPrice && (
-                                  <div className="text-right flex-shrink-0">
-                                    <p className="text-xs text-gray-400">Média</p>
-                                    <p className={`font-bold ${
-                                      market.tier === 'cheap' ? 'text-green-600' :
-                                      market.tier === 'medium' ? 'text-orange-600' :
-                                      market.tier === 'expensive' ? 'text-red-600' :
-                                      'text-gray-400'
+                              <button
+                                key={market.id_mercado}
+                                onClick={() => handleMarketSelect(market.id_mercado)}
+                                className="w-full bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all text-left"
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${market.tier === 'cheap' ? 'bg-green-100' :
+                                      market.tier === 'medium' ? 'bg-orange-100' :
+                                        market.tier === 'expensive' ? 'bg-red-100' :
+                                          'bg-gray-100'
                                     }`}>
-                                      R$ {market.avgPrice.toFixed(2).replace('.', ',')}
-                                    </p>
+                                    <svg className={`w-5 h-5 ${market.tier === 'cheap' ? 'text-green-600' :
+                                        market.tier === 'medium' ? 'text-orange-600' :
+                                          market.tier === 'expensive' ? 'text-red-600' :
+                                            'text-gray-400'
+                                      }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
                                   </div>
-                                )}
-                              </div>
-                            </button>
-                          ))}
+                                  <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-gray-900 truncate">{market.nome_mercado}</h3>
+                                    {market.bairro_mercado && (
+                                      <p className="text-sm text-gray-500 truncate">{market.bairro_mercado}</p>
+                                    )}
+                                    <div className="flex items-center gap-3 mt-1">
+                                      {market.distance !== undefined && (
+                                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                          </svg>
+                                          {market.distance.toFixed(1)} km
+                                        </span>
+                                      )}
+                                      {market.productCount > 0 && (
+                                        <span className="text-xs text-gray-400">
+                                          {market.productCount} produtos
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {market.avgPrice && (
+                                    <div className="text-right flex-shrink-0">
+                                      <p className="text-xs text-gray-400">Média</p>
+                                      <p className={`font-bold ${market.tier === 'cheap' ? 'text-green-600' :
+                                          market.tier === 'medium' ? 'text-orange-600' :
+                                            market.tier === 'expensive' ? 'text-red-600' :
+                                              'text-gray-400'
+                                        }`}>
+                                        R$ {market.avgPrice.toFixed(2).replace('.', ',')}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              </button>
+                            ))}
                         </div>
                       )}
                     </>

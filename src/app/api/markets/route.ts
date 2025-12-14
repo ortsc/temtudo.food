@@ -53,18 +53,34 @@ export async function GET() {
     }
 
     // Get all prices grouped by market with average
-    const { data: priceData, error: pricesError } = await supabase
-      .from('Precos')
-      .select('id_mercado, preco')
+    // Fetch in batches to avoid Supabase 1000 row limit
+    let allPriceData: Array<{ id_mercado: number; preco: number }> = []
+    let page = 0
+    const pageSize = 1000
 
-    if (pricesError) {
-      console.error('Error fetching prices:', pricesError)
+    while (true) {
+      const { data: priceBatch, error: pricesError } = await supabase
+        .from('Precos')
+        .select('id_mercado, preco')
+        .range(page * pageSize, (page + 1) * pageSize - 1)
+
+      if (pricesError) {
+        console.error('Error fetching prices:', pricesError)
+        break
+      }
+
+      if (!priceBatch || priceBatch.length === 0) break
+      
+      allPriceData = allPriceData.concat(priceBatch as Array<{ id_mercado: number; preco: number }>)
+      
+      if (priceBatch.length < pageSize) break // Last page
+      page++
     }
 
     // Calculate average price per market
     const marketPriceMap = new Map<number, { total: number; count: number }>()
     
-    for (const price of priceData || []) {
+    for (const price of allPriceData) {
       if (price.id_mercado && price.preco) {
         const existing = marketPriceMap.get(price.id_mercado) || { total: 0, count: 0 }
         existing.total += Number(price.preco)

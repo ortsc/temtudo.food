@@ -58,32 +58,54 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { productName, userLat, userLng } = body
+    const { productId, productName, userLat, userLng } = body
 
-    if (!productName) {
+    if (!productId && !productName) {
       return NextResponse.json(
-        { success: false, error: 'Nome do produto não fornecido', markets: [] },
+        { success: false, error: 'ID ou nome do produto não fornecido', markets: [] },
         { status: 400 }
       )
     }
 
     const supabase = await createClient()
 
-    // Search for products matching the query
-    const { data: products, error: productError } = await supabase
-      .from('Produtos')
-      .select('id_produto, nome_produto, marca_produto, categoria')
-      .or(`nome_produto.ilike.%${productName}%,marca_produto.ilike.%${productName}%`)
+    let products: Array<{ id_produto: number; nome_produto: string | null; marca_produto: string | null; categoria: string | null }> = []
+    
+    // If productId is provided, use it directly
+    if (productId) {
+      const { data: productData, error: productError } = await supabase
+        .from('Produtos')
+        .select('id_produto, nome_produto, marca_produto, categoria')
+        .eq('id_produto', productId)
+      
+      if (productError) {
+        console.error('Error fetching product by ID:', productError)
+        return NextResponse.json(
+          { success: false, error: 'Erro ao buscar produto', markets: [] },
+          { status: 500 }
+        )
+      }
+      
+      products = productData || []
+    } else if (productName) {
+      // Fallback to name search
+      const { data: productData, error: productError } = await supabase
+        .from('Produtos')
+        .select('id_produto, nome_produto, marca_produto, categoria')
+        .or(`nome_produto.ilike.%${productName}%,marca_produto.ilike.%${productName}%`)
 
-    if (productError) {
-      console.error('Error searching products:', productError)
-      return NextResponse.json(
-        { success: false, error: 'Erro ao buscar produtos', markets: [] },
-        { status: 500 }
-      )
+      if (productError) {
+        console.error('Error searching products:', productError)
+        return NextResponse.json(
+          { success: false, error: 'Erro ao buscar produtos', markets: [] },
+          { status: 500 }
+        )
+      }
+      
+      products = productData || []
     }
 
-    if (!products || products.length === 0) {
+    if (products.length === 0) {
       return NextResponse.json({
         success: true,
         product: null,
@@ -93,24 +115,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Get product IDs
-    const productIds = products.map((p: { id_produto: number }) => p.id_produto)
+    const productIds = products.map((p) => p.id_produto)
 
-    // Get all prices for these products
-    const { data: prices, error: pricesError } = await supabase
-      .from('Precos')
-      .select('id_preco, id_produto, id_mercado, preco, data_hora')
-      .in('id_produto', productIds)
-      .order('data_hora', { ascending: false })
+    // Get all prices for these products (paginated to avoid 1000 row limit)
+    let allPrices: PriceRow[] = []
+    let page = 0
+    const pageSize = 1000
 
-    if (pricesError) {
-      console.error('Error fetching prices:', pricesError)
-      return NextResponse.json(
-        { success: false, error: 'Erro ao buscar preços', markets: [] },
-        { status: 500 }
-      )
+    while (true) {
+      const { data: priceBatch, error: pricesError } = await supabase
+        .from('Precos')
+        .select('id_preco, id_produto, id_mercado, preco, data_hora')
+        .in('id_produto', productIds)
+        .order('data_hora', { ascending: false })
+        .range(page * pageSize, (page + 1) * pageSize - 1)
+
+      if (pricesError) {
+        console.error('Error fetching prices:', pricesError)
+        return NextResponse.json(
+          { success: false, error: 'Erro ao buscar preços', markets: [] },
+          { status: 500 }
+        )
+      }
+
+      if (!priceBatch || priceBatch.length === 0) break
+      
+      allPrices = allPrices.concat(priceBatch as PriceRow[])
+      
+      if (priceBatch.length < pageSize) break
+      page++
     }
 
-    const priceRows = prices as PriceRow[] | null
+    const priceRows = allPrices.length > 0 ? allPrices : null
 
     if (!priceRows || priceRows.length === 0) {
       return NextResponse.json({

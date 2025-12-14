@@ -216,6 +216,7 @@ export default function SearchPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          productId: product.id_produto,
           productName: product.nome_produto,
           userLat: userLocation?.lat,
           userLng: userLocation?.lng,
@@ -328,9 +329,14 @@ export default function SearchPage() {
     }
   }
 
+  // Filter search results by distance too
+  const filteredSearchMarkets = distanceFilter
+    ? markets.filter(m => m.distance !== undefined && m.distance <= distanceFilter)
+    : markets
+
   // Determine which markers to show
-  const mapMarkers = selectedProduct && markets.length > 0
-    ? markets.map(m => ({
+  const mapMarkers = selectedProduct && filteredSearchMarkets.length > 0
+    ? filteredSearchMarkets.map(m => ({
         id: m.id_mercado,
         lat: m.lat,
         lng: m.lng,
@@ -669,17 +675,19 @@ export default function SearchPage() {
                           <p className="text-gray-600 font-medium">{error}</p>
                           <p className="text-sm text-gray-400 mt-1">Tente buscar outro produto</p>
                         </div>
-                      ) : selectedProduct && markets.length > 0 ? (
+                      ) : selectedProduct && filteredSearchMarkets.length > 0 ? (
                         <>
                           <div className="mb-3">
                             <h2 className="text-base font-bold text-gray-900">
                               Melhores Preços - {selectedProduct.nome_produto}
                             </h2>
-                            <p className="text-xs text-gray-500">Ordenado por menor preço</p>
+                            <p className="text-xs text-gray-500">
+                              {filteredSearchMarkets.length} mercados {distanceFilter ? `até ${distanceFilter} km` : ''} • Ordenado por menor preço
+                            </p>
                           </div>
 
                           <div className="space-y-2">
-                            {markets.map((market, index) => (
+                            {filteredSearchMarkets.map((market, index) => (
                               <MarketPriceCard
                                 key={market.id_mercado}
                                 nome={market.nome_mercado}
@@ -692,7 +700,7 @@ export default function SearchPage() {
                             ))}
                           </div>
 
-                          {markets.length >= 2 && (
+                          {filteredSearchMarkets.length >= 2 && (
                             <div className="mt-4 p-3 bg-primary/10 rounded-xl">
                               <div className="flex items-center gap-3">
                                 <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
@@ -702,16 +710,34 @@ export default function SearchPage() {
                                 </div>
                                 <div className="min-w-0">
                                   <p className="font-semibold text-primary text-sm">
-                                    Economize R$ {(markets[markets.length - 1].preco - markets[0].preco).toFixed(2).replace('.', ',')}
+                                    Economize R$ {(filteredSearchMarkets[filteredSearchMarkets.length - 1].preco - filteredSearchMarkets[0].preco).toFixed(2).replace('.', ',')}
                                   </p>
                                   <p className="text-xs text-gray-600 truncate">
-                                    comprando no {markets[0].nome_mercado}
+                                    comprando no {filteredSearchMarkets[0].nome_mercado}
                                   </p>
                                 </div>
                               </div>
                             </div>
                           )}
                         </>
+                      ) : selectedProduct && markets.length > 0 && filteredSearchMarkets.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
+                            <svg className="w-7 h-7 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            </svg>
+                          </div>
+                          <p className="text-gray-600 font-medium">Nenhum mercado até {distanceFilter} km</p>
+                          <p className="text-sm text-gray-400 mt-1">
+                            Existem {markets.length} mercados com este produto
+                          </p>
+                          <button
+                            onClick={() => setDistanceFilter(null)}
+                            className="mt-3 text-primary text-sm hover:underline"
+                          >
+                            Remover filtro de distância
+                          </button>
+                        </div>
                       ) : (
                         <div className="text-center py-8">
                           <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
